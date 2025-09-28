@@ -1,0 +1,433 @@
+/* 公共设计系统 - 统一UI样式 */
+
+/* CSS变量定义 */
+:root {
+  /* 主色调 - 以JoinRoomView的青绿色为主 */
+  --primary-color: #4ecdc4;
+  --primary-dark: #44a08d;
+  --primary-light: rgba(78, 205, 196, 0.1);
+  
+  /* 辅助颜色 */
+  --secondary-color: #667eea;
+  --secondary-dark: #5a67d8;
+  
+  /* 状态颜色 */
+  --success-color: #28a745;
+  --success-light: rgba(40, 167, 69, 0.1);
+  --success-border: rgba(40, 167, 69, 0.2);
+  --error-color: #c53030;
+  --error-light: #fee;
+  --error-border: #feb2b2;
+  
+  /* 文字颜色 */
+  --text-primary: #333;
+  --text-secondary: #666;
+  --text-light: #495057;
+  --text-white: white;
+  --text-white-secondary: rgba(255, 255, 255, 0.9);
+  
+  /* 背景颜色 */
+  --bg-white: white;
+  --bg-light: #f8f9fa;
+  --bg-glass: rgba(255, 255, 255, 0.95);
+  --bg-glass-light: rgba(255, 255, 255, 0.2);
+  --bg-glass-hover: rgba(255, 255, 255, 0.3);
+  
+  /* 边框颜色 */
+  --border-color: #e1e5e9;
+  --border-light: #eee;
+  
+  /* 阴影 */
+  --shadow-light: 0 4px 15px rgba(78, 205, 196, 0.3);
+  --shadow-medium: 0 6px 20px rgba(78, 205, 196, 0.4);
+  --shadow-heavy: 0 10px 30px rgba(0, 0, 0, 0.2);
+  --shadow-card: 0 20px 40px rgba(0, 0, 0, 0.1);
+  
+  /* 圆角 */
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 15px;
+  --radius-xl: 20px;
+  --radius-round: 25px;
+  
+  /* 间距 */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.25rem;
+  --spacing-xl: 1.5rem;
+  --spacing-2xl: 2rem;
+  --spacing-3xl: 3rem;
+  
+  /* 字体大小 */
+  --font-xs: 0.9rem;
+  --font-sm: 1rem;
+  --font-md: 1.1rem;
+  --font-lg: 1.2rem;
+  --font-xl: 2rem;
+  --font-2xl: 3rem;
+  
+  /* 过渡效果 */
+  --transition-fast: all 0.3s ease;
+  --transition-medium: all 0.8s ease;
+}
+
+/* 页面容器样式 */
+.page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 页面头部样式 */
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.page-title {
+  font-size: 3rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.page-description {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+/* 返回按钮样式 */
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-xl);
+  background: var(--bg-glass-light);
+  border: none;
+  border-radius: var(--radius-round);
+  color: var(--text-white);
+  font-size: var(--font-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  backdrop-filter: blur(10px);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.back-button:hover {
+  background: var(--bg-glass-hover);
+  transform: translateX(-5px);
+}
+
+.back-icon {
+  font-size: var(--font-lg);
+}
+
+/* 内容区域样式 */
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* 表单容器样式 */
+.form-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.form-card {
+  background: var(--bg-glass);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-3xl);
+  box-shadow: var(--shadow-heavy);
+  max-width: 500px;
+  width: 100%;
+  backdrop-filter: blur(10px);
+}
+
+/* 表单组件样式 */
+.form-group {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.label-icon {
+  font-size: var(--font-lg);
+}
+
+.form-input {
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-medium);
+  font-size: var(--font-sm);
+  background: var(--bg-white);
+  transition: var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.form-input:read-only {
+  background: var(--bg-light);
+  color: var(--text-light);
+}
+
+.form-hint {
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+}
+
+/* 按钮样式 */
+.btn {
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  border: none;
+  border-radius: var(--radius-large);
+  font-size: var(--font-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  color: var(--text-white);
+  box-shadow: var(--shadow-light);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-secondary {
+  background: var(--bg-glass);
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-full-width {
+  width: 100%;
+}
+
+.btn-icon {
+  font-size: var(--font-lg);
+}
+
+/* 信息卡片样式 */
+.info-card {
+  background: var(--bg-glass);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(10px);
+  transition: var(--transition-fast);
+  margin-bottom: var(--spacing-xl);
+}
+
+.info-card:hover {
+  transform: translateY(-5px);
+}
+
+.card-title {
+  font-size: var(--font-xl);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xl) 0;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* 信息项样式 */
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.info-value {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* 特殊信息区域样式 */
+.qr-info {
+  background: var(--success-light);
+  border: 1px solid var(--success-border);
+  border-radius: var(--radius-medium);
+  padding: var(--spacing-md);
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.qr-success-icon {
+  font-size: var(--spacing-2xl);
+  margin-bottom: var(--spacing-xs);
+}
+
+.qr-info p {
+  color: var(--success-color);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* 二维码样式 */
+.qr-code-wrapper {
+  text-align: center;
+}
+
+.qr-code-image {
+  width: 200px;
+  height: 200px;
+  border-radius: var(--radius-medium);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.qr-code-text {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-lg) 0;
+  font-weight: 500;
+}
+
+/* 消息样式 */
+.message {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-radius: var(--radius-medium);
+  margin-top: var(--spacing-xl);
+  text-align: center;
+  font-weight: 500;
+}
+
+.error-message {
+  background: var(--error-light);
+  color: var(--error-color);
+  border: 1px solid var(--error-border);
+}
+
+.success-message {
+  background: var(--success-light);
+  color: var(--success-color);
+  border: 1px solid var(--success-border);
+}
+
+/* 加载动画 */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 页面切换动画 */
+.fade-out-enter-active,
+.fade-out-leave-active {
+  transition: var(--transition-medium);
+}
+
+.fade-out-enter-from,
+.fade-out-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+.fade-in-enter-active,
+.fade-in-leave-active {
+  transition: var(--transition-medium);
+}
+
+.fade-in-enter-from,
+.fade-in-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .page-container {
+    padding: var(--spacing-md);
+  }
+  
+  .page-title {
+    font-size: var(--font-xl);
+  }
+  
+  .form-card,
+  .info-card {
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.8rem;
+  }
+  
+  .form-card,
+  .info-card {
+    padding: var(--spacing-xl) var(--spacing-lg);
+  }
+  
+  .qr-code-image {
+    width: 150px;
+    height: 150px;
+  }
+}
