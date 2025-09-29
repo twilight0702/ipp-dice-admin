@@ -2,7 +2,7 @@ name: Frontend CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch: # 手动触发
 
 jobs:
