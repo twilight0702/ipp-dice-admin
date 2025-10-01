@@ -51,10 +51,10 @@ const validateForm = (): boolean => {
     return false
   }
 
-  if (formData.ttl < 300 || formData.ttl > 86400) {
-    errorMessage.value = '房间存活时间必须在5分钟到24小时之间'
-    return false
-  }
+  // if (formData.ttl < 300 || formData.ttl > 86400) {
+  //   errorMessage.value = '房间存活时间必须在5分钟到24小时之间'
+  //   return false
+  // }
 
   if (formData.round < 1 || formData.round > 100) {
     errorMessage.value = '游戏轮数必须在1到100之间'
