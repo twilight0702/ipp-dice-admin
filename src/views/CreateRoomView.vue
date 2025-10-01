@@ -2,12 +2,13 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { createRoom, updateRoomRound, type CreateRoomRequest } from '@/api/room'
+import RoomManagementView from './RoomManagementView.vue'
 
 const router = useRouter()
 
 // 页面状态
 const showCreateForm = ref(true)
-const showRoomInfo = ref(false)
+const showRoomManagement = ref(false)
 const isTransitioning = ref(false)
 
 // 表单数据
@@ -103,9 +104,9 @@ const handleSubmit = async () => {
       showCreateForm.value = false
     }, 100)
 
-    // 房间信息窗口出现
+    // 房间管理窗口出现
     setTimeout(() => {
-      showRoomInfo.value = true
+      showRoomManagement.value = true
       isTransitioning.value = false
     }, 800)
   } catch (error) {
@@ -116,6 +117,7 @@ const handleSubmit = async () => {
 
 // TTL选项（秒）
 const ttlOptions = [
+  { label: '无限制', value: -1},
   { label: '5分钟', value: 300 },
   { label: '30分钟', value: 1800 },
   { label: '1小时', value: 3600 },
@@ -137,61 +139,11 @@ const generateQRCode = (url: string): Promise<string> => {
   })
 }
 
-// 修改轮数
-const updateRound = async () => {
-  if (newRound.value <= 0) {
-    errorMessage.value = '轮数必须大于0'
-    return
-  }
-
-  if (newRound.value > 100) {
-    errorMessage.value = '轮数不能超过100'
-    return
-  }
-
-  isUpdatingRound.value = true
-  errorMessage.value = ''
-  successMessage.value = ''
-
-  try {
-    // 调用API更新轮数
-    await updateRoomRound(roomInfo.roomId, newRound.value)
-
-    // 更新本地状态
-    roomInfo.round = newRound.value
-    successMessage.value = '轮数更新成功！'
-
-    // 清除成功消息
-    setTimeout(() => {
-      successMessage.value = ''
-    }, 3000)
-  } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '更新轮数失败，请重试'
-  } finally {
-    isUpdatingRound.value = false
-  }
-}
-
 // 返回首页
 const goHome = () => {
   router.push('/')
 }
 
-// 重新创建房间
-const createNewRoom = () => {
-  showRoomInfo.value = false
-  showCreateForm.value = true
-
-  // 重置表单数据
-  formData.name = ''
-  formData.ttl = 3600
-  formData.round = 10
-
-  // 清除消息
-  errorMessage.value = ''
-  successMessage.value = ''
-  isLoading.value = false
-}
 </script>
 
 <template>
@@ -272,115 +224,15 @@ const createNewRoom = () => {
       </div>
     </Transition>
 
-    <!-- 房间信息展示 -->
+    <!-- 房间管理界面 -->
     <Transition name="fade-in" appear>
-      <div v-if="showRoomInfo" class="content">
-        <div class="page-header">
-          <h1 class="page-title">✅ 房间创建成功</h1>
-          <p class="page-description">房间信息和邀请码</p>
-        </div>
-
-        <div class="room-info-container">
-          <!-- 左侧区域 -->
-          <div class="left-column">
-            <!-- 二维码展示 -->
-            <div class="info-card">
-              <h3 class="card-title">📱 房间邀请码</h3>
-              <div class="qr-code-wrapper">
-                <img
-                  v-if="roomInfo.qrCodeImage"
-                  :src="roomInfo.qrCodeImage"
-                  alt="房间二维码"
-                  class="qr-code-image"
-                />
-                <p class="qr-code-text">扫码加入房间</p>
-                <a
-                  :href="roomInfo.qrCodeUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="btn btn-primary"
-                >
-                  <span class="btn-icon">🔗</span>
-                  点击打开加入房间页面
-                </a>
-              </div>
-            </div>
-
-            <!-- 房间基本信息 -->
-            <div class="info-card">
-              <h3 class="card-title">📋 房间信息</h3>
-              <div class="info-item">
-                <span class="info-label">房间ID:</span>
-                <span class="info-value">{{ roomInfo.roomId }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">房间名称:</span>
-                <span class="info-value">{{ roomInfo.name }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">存活时间:</span>
-                <span class="info-value">{{ Math.floor(roomInfo.ttl / 60) }} 分钟</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">当前轮数:</span>
-                <span class="info-value">{{ roomInfo.round }} 轮</span>
-              </div>
-            </div>
-
-            <!-- 轮数修改 -->
-            <div class="info-card">
-              <h3 class="card-title">⚙️ 修改轮数</h3>
-              <div class="round-update-form">
-                <input
-                  v-model.number="newRound"
-                  type="number"
-                  class="form-input"
-                  placeholder="新轮数"
-                  min="1"
-                  max="100"
-                />
-                <button @click="updateRound" class="btn btn-primary" :disabled="isUpdatingRound">
-                  <span v-if="isUpdatingRound" class="loading-spinner"></span>
-                  <span class="btn-icon">🔄</span>
-                  {{ isUpdatingRound ? '更新中...' : '更新轮数' }}
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- 右侧区域 - 排行榜 -->
-          <div class="right-column">
-            <div class="info-card">
-              <h3 class="card-title">🏆 排行榜</h3>
-              <div class="leaderboard-placeholder">
-                <p>排行榜内容区域</p>
-                <p>（待实现）</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 操作按钮 -->
-          <div class="action-buttons">
-            <button @click="createNewRoom" class="btn btn-secondary">
-              <span class="btn-icon">➕</span>
-              创建新房间
-            </button>
-            <button @click="goHome" class="btn btn-primary">
-              <span class="btn-icon">🏠</span>
-              返回首页
-            </button>
-          </div>
-
-          <!-- 消息提示 -->
-          <div v-if="errorMessage" class="message error-message">
-            {{ errorMessage }}
-          </div>
-          <div v-if="successMessage" class="message success-message">
-            {{ successMessage }}
-          </div>
-        </div>
-      </div>
+      <RoomManagementView
+        v-if="showRoomManagement"
+        :room-id="roomInfo.roomId"
+        :room-name="roomInfo.name"
+        :ttl="roomInfo.ttl"
+        :round="roomInfo.round"
+      />
     </Transition>
   </div>
 </template>
