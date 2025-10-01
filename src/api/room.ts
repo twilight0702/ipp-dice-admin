@@ -9,12 +9,12 @@ export interface CreateRoomResponse {
   code: number
   message: string
   data: {
-    roomId: number
+    roomId: string
   }
 }
 
 export interface UpdateRoundRequest {
-  roomId: number
+  roomId: string
   round: number
 }
 
@@ -75,9 +75,9 @@ export const createRoom = async (data: CreateRoomRequest): Promise<CreateRoomRes
 }
 
 // 修改轮次API
-export const updateRoomRound = async (roomId: number, round: number): Promise<UpdateRoundResponse> => {
+export const updateRoomRound = async (roomId: string, round: number): Promise<UpdateRoundResponse> => {
   const baseUrl = getApiBaseUrl()
-  const url = `${baseUrl}/room/round?roomId=${roomId}&round=${round}`
+  const url = `${baseUrl}/room/round?roomId=${encodeURIComponent(roomId)}&round=${round}`
   
   try {
     const response = await fetch(url, {

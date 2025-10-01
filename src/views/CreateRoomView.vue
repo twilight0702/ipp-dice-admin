@@ -19,7 +19,7 @@ const formData = reactive<CreateRoomRequest>({
 
 // 房间信息
 const roomInfo = reactive({
-  roomId: 0,
+  roomId: '',
   name: '',
   ttl: 3600,
   round: 10,
@@ -281,67 +281,82 @@ const createNewRoom = () => {
         </div>
 
         <div class="room-info-container">
-          <!-- 房间基本信息 -->
-          <div class="info-card">
-            <h3 class="card-title">📋 房间信息</h3>
-            <div class="info-item">
-              <span class="info-label">房间ID:</span>
-              <span class="info-value">{{ roomInfo.roomId }}</span>
+          <!-- 左侧区域 -->
+          <div class="left-column">
+            <!-- 二维码展示 -->
+            <div class="info-card">
+              <h3 class="card-title">📱 房间邀请码</h3>
+              <div class="qr-code-wrapper">
+                <img
+                  v-if="roomInfo.qrCodeImage"
+                  :src="roomInfo.qrCodeImage"
+                  alt="房间二维码"
+                  class="qr-code-image"
+                />
+                <p class="qr-code-text">扫码加入房间</p>
+                <a
+                  :href="roomInfo.qrCodeUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-primary"
+                >
+                  <span class="btn-icon">🔗</span>
+                  点击打开加入房间页面
+                </a>
+              </div>
             </div>
-            <div class="info-item">
-              <span class="info-label">房间名称:</span>
-              <span class="info-value">{{ roomInfo.name }}</span>
+
+            <!-- 房间基本信息 -->
+            <div class="info-card">
+              <h3 class="card-title">📋 房间信息</h3>
+              <div class="info-item">
+                <span class="info-label">房间ID:</span>
+                <span class="info-value">{{ roomInfo.roomId }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">房间名称:</span>
+                <span class="info-value">{{ roomInfo.name }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">存活时间:</span>
+                <span class="info-value">{{ Math.floor(roomInfo.ttl / 60) }} 分钟</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">当前轮数:</span>
+                <span class="info-value">{{ roomInfo.round }} 轮</span>
+              </div>
             </div>
-            <div class="info-item">
-              <span class="info-label">存活时间:</span>
-              <span class="info-value">{{ Math.floor(roomInfo.ttl / 60) }} 分钟</span>
+
+            <!-- 轮数修改 -->
+            <div class="info-card">
+              <h3 class="card-title">⚙️ 修改轮数</h3>
+              <div class="round-update-form">
+                <input
+                  v-model.number="newRound"
+                  type="number"
+                  class="form-input"
+                  placeholder="新轮数"
+                  min="1"
+                  max="100"
+                />
+                <button @click="updateRound" class="btn btn-primary" :disabled="isUpdatingRound">
+                  <span v-if="isUpdatingRound" class="loading-spinner"></span>
+                  <span class="btn-icon">🔄</span>
+                  {{ isUpdatingRound ? '更新中...' : '更新轮数' }}
+                </button>
+              </div>
             </div>
-            <div class="info-item">
-              <span class="info-label">当前轮数:</span>
-              <span class="info-value">{{ roomInfo.round }} 轮</span>
-            </div>
+
           </div>
 
-          <!-- 轮数修改 -->
-          <div class="info-card">
-            <h3 class="card-title">⚙️ 修改轮数</h3>
-            <div class="round-update-form">
-              <input
-                v-model.number="newRound"
-                type="number"
-                class="form-input"
-                placeholder="新轮数"
-                min="1"
-                max="100"
-              />
-              <button @click="updateRound" class="btn btn-primary" :disabled="isUpdatingRound">
-                <span v-if="isUpdatingRound" class="loading-spinner"></span>
-                <span class="btn-icon">🔄</span>
-                {{ isUpdatingRound ? '更新中...' : '更新轮数' }}
-              </button>
-            </div>
-          </div>
-
-          <!-- 二维码展示 -->
-          <div class="info-card">
-            <h3 class="card-title">📱 房间邀请码</h3>
-            <div class="qr-code-wrapper">
-              <img
-                v-if="roomInfo.qrCodeImage"
-                :src="roomInfo.qrCodeImage"
-                alt="房间二维码"
-                class="qr-code-image"
-              />
-              <p class="qr-code-text">扫码加入房间</p>
-              <a
-                :href="roomInfo.qrCodeUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn-primary"
-              >
-                <span class="btn-icon">🔗</span>
-                点击打开加入房间页面
-              </a>
+          <!-- 右侧区域 - 排行榜 -->
+          <div class="right-column">
+            <div class="info-card">
+              <h3 class="card-title">🏆 排行榜</h3>
+              <div class="leaderboard-placeholder">
+                <p>排行榜内容区域</p>
+                <p>（待实现）</p>
+              </div>
             </div>
           </div>
 
@@ -375,9 +390,29 @@ const createNewRoom = () => {
 /* 房间信息容器布局 */
 .room-info-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 2fr 1fr;
   gap: var(--spacing-xl);
   margin-top: var(--spacing-2xl);
+}
+
+/* 左右列布局 */
+.left-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* 排行榜占位符 */
+.leaderboard-placeholder {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--text-secondary);
 }
 
 /* 轮数修改表单 */
