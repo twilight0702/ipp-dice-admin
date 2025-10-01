@@ -84,7 +84,15 @@ const handleSubmit = async () => {
     newRound.value = formData.round
 
     // 生成二维码
-    roomInfo.qrCodeUrl = `/frontend/?roomId=${response.data.roomId}`
+    if (import.meta.env.DEV) {
+      // 开发环境，生成完整的URL指向另一个前端应用的开发服务器
+      roomInfo.qrCodeUrl = `/frontend/?roomId=${response.data.roomId}`
+    } else {
+      // 生产环境，生成完整的URL指向同服务器下的/frontend/路径
+      const baseUrl = window.location.origin
+      const basePath = window.location.pathname.split('/').slice(0, -2).join('/')
+      roomInfo.qrCodeUrl = `${baseUrl}${basePath}/frontend/?roomId=${response.data.roomId}`
+    }
     roomInfo.qrCodeImage = await generateQRCode(roomInfo.qrCodeUrl)
 
     // 开始页面切换动画
