@@ -70,7 +70,7 @@ onMounted(async () => {
       roomInfo.isOpen = roomInfoResponse.data.isOpen
       isRoomOpen.value = roomInfoResponse.data.isOpen === 1
     }
-    
+
     if (import.meta.env.DEV) {
       // 开发环境，生成完整的URL指向另一个前端应用的开发服务器
       roomInfo.qrCodeUrl = `http://localhost:5173/?roomId=${roomInfo.roomId}`
@@ -253,7 +253,7 @@ const toggleRoomStatus = async () => {
       isRoomOpen.value = false
       roomInfo.isOpen = 0
       successMessage.value = '房间已关闭！'
-      
+
       // 如果房间关闭了，停止轮询
       stopRankPolling()
     } else {
@@ -262,7 +262,7 @@ const toggleRoomStatus = async () => {
       isRoomOpen.value = true
       roomInfo.isOpen = 1
       successMessage.value = '房间已开启！'
-      
+
       // 如果排行榜可见，重新开始轮询
       if (isRankVisible.value) {
         await fetchRankData()
@@ -275,7 +275,7 @@ const toggleRoomStatus = async () => {
     isRoomOpen.value = !isRoomOpen.value
   } finally {
     isTogglingRoom.value = false
-    
+
     // 清除消息
     setTimeout(() => {
       successMessage.value = ''
@@ -375,8 +375,8 @@ const createNewRoom = () => {
         <div class="info-card">
           <h3 class="card-title">🚪 房间开关</h3>
           <div class="room-toggle-form">
-            <button 
-              @click="toggleRoomStatus" 
+            <button
+              @click="toggleRoomStatus"
               class="btn"
               :class="isRoomOpen ? 'btn-warning' : 'btn-success'"
               :disabled="isTogglingRoom"
@@ -500,14 +500,6 @@ const createNewRoom = () => {
           <span class="btn-icon">🏠</span>
           返回首页
         </button>
-      </div>
-
-      <!-- 消息提示 -->
-      <div v-if="errorMessage" class="message error-message">
-        {{ errorMessage }}
-      </div>
-      <div v-if="successMessage" class="message success-message">
-        {{ successMessage }}
       </div>
     </div>
   </div>
