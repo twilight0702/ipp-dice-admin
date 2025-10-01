@@ -84,9 +84,7 @@ const handleSubmit = async () => {
     newRound.value = formData.round
 
     // 生成二维码
-    //const baseUrl = window.location.origin
-    //roomInfo.qrCodeUrl = `${baseUrl}/join-room?roomId=${response.data.roomId}`
-    roomInfo.qrCodeUrl = `http://localhost:5175?roomId=${response.data.roomId}`
+    roomInfo.qrCodeUrl = `/frontend/?roomId=${response.data.roomId}`
     roomInfo.qrCodeImage = await generateQRCode(roomInfo.qrCodeUrl)
 
     // 开始页面切换动画

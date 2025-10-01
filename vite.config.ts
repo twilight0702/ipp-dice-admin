@@ -22,6 +22,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
+      '/frontend/': {
+        target: 'http://localhost:5173/frontend',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/frontend/, ''),
+      }
     },
   },
 })
