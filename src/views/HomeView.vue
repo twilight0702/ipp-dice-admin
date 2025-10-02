@@ -15,16 +15,16 @@ const goToJoinRoom = () => {
 <template>
   <div class="home-container">
     <div class="welcome-section">
-      <h1 class="title">IPP骰子管理系统</h1>
+      <h1 class="title">IPP招新抽奖</h1>
       <p class="subtitle">选择你的操作</p>
     </div>
-    
+
     <div class="button-section">
       <button class="action-button create-button" @click="goToCreateRoom">
         <span class="button-icon">🎲</span>
         <span class="button-text">创建房间</span>
       </button>
-      
+
       <button class="action-button join-button" @click="goToJoinRoom">
         <span class="button-icon">🚪</span>
         <span class="button-text">进入房间</span>
@@ -118,12 +118,12 @@ const goToJoinRoom = () => {
   .title {
     font-size: 2rem;
   }
-  
+
   .button-section {
     flex-direction: column;
     gap: 1.5rem;
   }
-  
+
   .action-button {
     width: 180px;
     height: 180px;

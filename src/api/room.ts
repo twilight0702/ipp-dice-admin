@@ -285,6 +285,48 @@ export interface GetRoomInfoVOResponse {
   data: RoomInfoVO | null
 }
 
+// 房间列表接口返回数据类型
+export interface RoomListVO {
+  roomInfoVOS: RoomInfoVO[]
+}
+
+export interface GetRoomListResponse {
+  code: number
+  message: string
+  data: RoomListVO
+}
+
+// 获取房间列表API
+export const getRoomList = async (): Promise<GetRoomListResponse> => {
+  const baseUrl = getApiBaseUrl()
+  const url = `${baseUrl}/room/list`
+  
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const result: GetRoomListResponse = await response.json()
+    
+    // 检查业务状态码
+    if (result.code !== 200) {
+      throw new Error(result.message || '获取房间列表失败')
+    }
+    
+    return result
+  } catch (error) {
+    console.error('获取房间列表API调用失败:', error)
+    throw error
+  }
+}
+
 // 获取房间详细信息API（包含isOpen字段）
 export const getRoomInfoVO = async (roomId: string): Promise<GetRoomInfoVOResponse> => {
   const baseUrl = getApiBaseUrl()
