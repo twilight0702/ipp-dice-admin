@@ -5,8 +5,19 @@ import RoomManagementView from './RoomManagementView.vue'
 import { getRoomInfo } from '@/api/room'
 import { getRoomList, type RoomInfoVO } from '@/api/room'
 
+// PrimeVue 组件
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import Card from 'primevue/card'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Tag from 'primevue/tag'
+import { useToast } from 'primevue/usetoast'
+import FloatLabel from 'primevue/floatlabel'
+
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 
 const roomId = ref<string>('')
 const isFromQRCode = ref(false)
@@ -20,7 +31,7 @@ const lastRoomListHash = ref<string>('')
 const roomInfo = ref({
   name: '',
   ttl: 0,
-  round: 0
+  round: 0,
 })
 
 onMounted(() => {
@@ -30,7 +41,7 @@ onMounted(() => {
     roomId.value = urlRoomId
     isFromQRCode.value = true
   }
-  
+
   // 获取房间列表并启动轮询
   fetchRoomList()
   startPolling()
@@ -62,13 +73,13 @@ const joinRoom = async (id?: string) => {
     console.log('防止重复点击，直接返回')
     return
   }
-  
+
   if (id) {
     roomId.value = id
   }
-  
+
   if (!roomId.value.trim()) {
-    alert('请输入房间ID')
+    toast.add({ severity: 'warn', summary: '提示', detail: '请输入房间ID', life: 2500 })
     return
   }
 
@@ -78,13 +89,13 @@ const joinRoom = async (id?: string) => {
     // 调用API获取房间详情
     const response = await getRoomInfo(roomId.value)
     console.log('房间信息请求成功，响应数据:', response)
-    
+
     // 保存房间信息
     if (response.data) {
       roomInfo.value.name = response.data.name
       roomInfo.value.ttl = response.data.ttl
       roomInfo.value.round = response.data.round
-      
+
       // 显示房间管理界面
       showRoomManagement.value = true
     }
@@ -92,7 +103,7 @@ const joinRoom = async (id?: string) => {
     // 处理错误，特别是房间不存在的情况
     const errorMessage = error instanceof Error ? error.message : '加入房间失败'
     console.error('加入房间失败:', error)
-    alert(errorMessage)
+    toast.add({ severity: 'error', summary: '加入失败', detail: errorMessage, life: 3000 })
   } finally {
     isLoading.value = false
     console.log('请求处理完成')
@@ -120,7 +131,7 @@ const startPolling = () => {
   if (pollingTimer.value) {
     clearInterval(pollingTimer.value)
   }
-  
+
   // 启动轮询，每5秒获取一次房间列表
   pollingTimer.value = window.setInterval(() => {
     fetchRoomList()
@@ -151,97 +162,122 @@ const getRoomStatusClass = (isOpen: number) => {
 <template>
   <div class="page-container">
     <div v-if="!showRoomManagement" class="content">
-      <div class="page-header">
-        <button class="back-button" @click="goBack">
-          <span class="back-icon">←</span>
-          返回首页
-        </button>
-        <h1 class="page-title">🚪 进入房间</h1>
-        <p class="page-description" v-if="!isFromQRCode">在这里你可以加入已存在的骰子房间</p>
-        <p class="page-description" v-else>🎯 扫码成功！请确认加入房间</p>
+      <div class="flex align-items-center justify-content-between mb-3">
+        <Button
+          label="返回首页"
+          icon="pi pi-arrow-left"
+          severity="secondary"
+          outlined
+          @click="goBack"
+        />
       </div>
-      
-      <div class="form-container">
-        <div class="form-card">
-          <div class="form-group">
-            <label for="roomId" class="form-label">
-              <span class="label-icon">🎲</span>
-              房间ID
-            </label>
-            <input
-              id="roomId"
-              v-model="roomId"
-              type="text"
-              class="form-input"
-              placeholder="请输入房间ID"
-              :readonly="isFromQRCode"
-            />
-          </div>
-          
-          <div v-if="isFromQRCode" class="qr-info">
-            <div class="qr-success-icon">✅</div>
-            <p>通过二维码扫描获取房间信息</p>
-          </div>
-          
-          <button 
-            @click="joinRoom()" 
-            class="btn btn-primary btn-full-width"
-            :disabled="!roomId.trim() || isLoading"
-          >
-            <span v-if="isLoading" class="loading-spinner"></span>
-            <span class="btn-icon">🚀</span>
-            {{ isLoading ? '加入中...' : '加入房间' }}
-          </button>
-        </div>
+      <div class="text-center">
+        <h1 class="page-title text-5xl text-primary">进入房间</h1>
+        <p
+          class="page-description text-color-surface"
+          v-if="!isFromQRCode"
+          style="color: var(--p-primary-300)"
+        >
+          在这里你可以加入已存在的骰子房间
+        </p>
+        <p class="page-description text-color-surface" v-else style="color: var(--p-primary-300)">
+          扫码成功！请确认加入房间
+        </p>
       </div>
-      
+
+      <div class="form-container flex justify-content-center px-5">
+        <Card class="w-full max-w-30rem">
+          <template #content>
+            <div class="flex flex-column gap-3">
+              <div class="flex flex-column gap-2 w-full">
+                <FloatLabel variant="on" class="w-full">
+                  <InputText
+                    id="roomId"
+                    v-model="roomId"
+                    :readonly="isFromQRCode"
+                    autocomplete="off"
+                    class="w-full"
+                  />
+                  <label for="roomId">房间ID</label>
+                </FloatLabel>
+              </div>
+
+              <div v-if="isFromQRCode" class="flex align-items-center gap-2">
+                <Tag value="通过二维码扫描获取房间信息" severity="success" />
+              </div>
+
+              <div>
+                <Button
+                  class="w-full"
+                  :label="isLoading ? '加入中...' : '加入房间'"
+                  icon="pi pi-sign-in"
+                  :loading="isLoading"
+                  :disabled="!roomId.trim() || isLoading"
+                  @click="joinRoom()"
+                />
+              </div>
+            </div>
+          </template>
+        </Card>
+      </div>
       <!-- 房间列表 -->
-      <div class="room-list-container">
-        <h2 class="section-title">🎲 当前房间列表</h2>
-        <div class="table-container">
-          <div class="info-card room-table-wrapper">
-            <table class="room-table">
-              <thead>
-                <tr>
-                  <th>名称</th>
-                  <th>过期时间</th>
-                  <th>轮次</th>
-                  <th>是否开启</th>
-                  <th>创建时间</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="room in roomList" :key="room.id">
-                  <td>{{ room.name }}</td>
-                  <td>{{ room.expireTime }}</td>
-                  <td>{{ room.round }}</td>
-                  <td>
-                    <span :class="['status-badge', getRoomStatusClass(room.isOpen)]">
-                      {{ getRoomStatus(room.isOpen) }}
-                    </span>
-                  </td>
-                  <td>{{ formatDateTime(room.createTime) }}</td>
-                  <td>
-                    <!-- 添加.stop.prevent修饰符防止事件冒泡和默认行为 -->
-                    <button @click.stop.prevent="joinRoom(room.id.toString())" class="btn btn-secondary">
-                      进入
-                    </button>
-                  </td>
-                </tr>
-                <tr v-if="roomList.length === 0">
-                  <td colspan="6" class="no-data">暂无房间数据</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <div class="w-full mt-3 px-5">
+        <Card>
+          <template #content>
+            <div class="flex align-items-center justify-content-center gap-2 mb-3">
+              <i class="pi pi-home text-3xl mr-2"></i>
+              <h2 class="text-center m-0">当前房间列表</h2>
+            </div>
+            <Card>
+              <template #content>
+                <DataTable
+                  :value="roomList"
+                  paginator
+                  :rows="5"
+                  :rowsPerPageOptions="[5, 10, 20, 50]"
+                  tableStyle="min-width: 50rem"
+                  removableSort
+                  dataKey="id"
+                  :rowHover="true"
+                  :stripedRows="true"
+                  class="w-full"
+                  :emptyMessage="'暂无房间数据'"
+                >
+                  <Column field="name" header="名称" sortable />
+                  <Column field="expireTime" header="过期时间" sortable />
+                  <Column field="round" header="轮次" sortable />
+                  <Column field="isOpen" header="是否开启" sortable>
+                    <template #body="{ data }">
+                      <Tag
+                        :severity="data.isOpen === 1 ? 'success' : 'danger'"
+                        :value="getRoomStatus(data.isOpen)"
+                      />
+                    </template>
+                  </Column>
+                  <Column field="createTime" header="创建时间" sortable>
+                    <template #body="{ data }">{{ formatDateTime(data.createTime) }}</template>
+                  </Column>
+                  <Column header="操作">
+                    <template #body="{ data }">
+                      <Button
+                        label="进入"
+                        size="small"
+                        severity="secondary"
+                        @click.stop.prevent="joinRoom(data.id.toString())"
+                      />
+                    </template>
+                  </Column>
+                </DataTable>
+              </template>
+            </Card>
+          </template>
+        </Card>
       </div>
     </div>
-    
+
     <!-- 房间管理界面 -->
-    <RoomManagementView 
-      v-else
+    <RoomManagementView
+      v-if="showRoomManagement"
       :room-id="roomId"
       :room-name="roomInfo.name"
       :ttl="roomInfo.ttl"
@@ -249,127 +285,3 @@ const getRoomStatusClass = (isOpen: number) => {
     />
   </div>
 </template>
-
-<style scoped>
-.room-list-container {
-  margin-top: 30px;
-  width: 100%;
-}
-
-.section-title {
-  text-align: center;
-  margin-bottom: 20px;
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-  font-size: 1.5rem;
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
-.room-table-wrapper {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 0;
-  box-shadow: var(--shadow-card);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  transition: none; /* 移除过渡效果 */
-}
-
-.room-table-wrapper:hover {
-  transform: none; /* 确保没有悬停时的变换效果 */
-}
-
-.room-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.room-table th,
-.room-table td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.room-table th {
-  background-color: var(--bg-light);
-  font-weight: bold;
-  color: var(--text-primary);
-  position: sticky;
-  top: 0;
-}
-
-.room-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.room-table tbody tr:hover {
-  background-color: var(--primary-light);
-}
-
-.no-data {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-.status-badge {
-  padding: 4px 10px;
-  border-radius: var(--radius-round);
-  font-size: var(--font-xs);
-  font-weight: 500;
-}
-
-.status-open {
-  background-color: var(--success-light);
-  color: var(--success-color);
-}
-
-.status-closed {
-  background-color: var(--error-light);
-  color: var(--error-color);
-}
-
-/* 使用公共CSS中的按钮样式 */
-.btn-secondary {
-  padding: 6px 12px;
-  background: var(--bg-glass);
-  color: var(--primary-color);
-  border: 2px solid var(--primary-color);
-  border-radius: var(--radius-medium);
-  cursor: pointer;
-  font-size: var(--font-sm);
-  font-weight: 600;
-  transition: var(--transition-fast);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: var(--primary-light);
-  transform: translateY(-2px);
-}
-
-.btn-secondary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .room-table {
-    font-size: var(--font-xs);
-  }
-  
-  .room-table th,
-  .room-table td {
-    padding: 8px 10px;
-  }
-  
-  .section-title {
-    font-size: 1.3rem;
-  }
-}
-</style>

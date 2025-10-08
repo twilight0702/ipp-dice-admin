@@ -3,8 +3,17 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { createRoom, updateRoomRound, type CreateRoomRequest } from '@/api/room'
 import RoomManagementView from './RoomManagementView.vue'
+import Card from 'primevue/card'
+import InputText from 'primevue/inputtext'
+import Dropdown from 'primevue/dropdown'
+import InputNumber from 'primevue/inputnumber'
+import Button from 'primevue/button'
+import Message from 'primevue/message'
+import FloatLabel from 'primevue/floatlabel'
+import { useToast } from 'primevue/usetoast'
 
 const router = useRouter()
+const toast = useToast()
 
 // 页面状态
 const showCreateForm = ref(true)
@@ -67,6 +76,7 @@ const validateForm = (): boolean => {
 // 提交表单
 const handleSubmit = async () => {
   if (!validateForm()) {
+    toast.add({ severity: 'warn', summary: '表单校验', detail: errorMessage.value || '请检查输入', life: 2500 })
     return
   }
 
@@ -112,6 +122,7 @@ const handleSubmit = async () => {
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '创建房间失败，请重试'
     isLoading.value = false
+    toast.add({ severity: 'error', summary: '创建失败', detail: errorMessage.value, life: 3000 })
   }
 }
 
@@ -150,76 +161,75 @@ const goHome = () => {
   <div class="page-container">
     <!-- 创建房间表单 -->
     <Transition name="fade-out" appear>
-      <div v-if="showCreateForm" class="content">
-        <div class="page-header">
-          <button class="back-button" @click="goHome">
-            <span class="back-icon">←</span>
-            返回首页
-          </button>
-          <h1 class="page-title">🎲 创建房间</h1>
-          <p class="page-description">填写房间信息，创建一个新的骰子游戏房间</p>
-        </div>
+      <div v-if="showCreateForm" class="grid justify-content-center p-3">
+        <div class="col-12 md:col-6">
+          <Card>
+            <template #title>
+              <span class="text-3xl font-bold"><i class="pi pi-home text-3xl mr-2"></i> 创建房间</span>
+            </template>
+            <template #subtitle>
+              <div class="mb-4">填写房间信息，创建一个新的骰子游戏房间</div>
+            </template>
+            <template #content>
+              <form @submit.prevent="handleSubmit" class="flex flex-column gap-5">
+                <div class="flex flex-column gap-1">
+                  <FloatLabel variant="on">
+                    <InputText
+                      id="roomName"
+                      v-model="formData.name"
+                      class="w-full"
+                      autocomplete="off"
+                      required
+                    />
+                    <label for="roomName">房间名称</label>
+                  </FloatLabel>
+                </div>
 
-        <div class="form-container">
-          <div class="form-card">
-            <form @submit.prevent="handleSubmit" class="room-form">
-              <div class="form-group">
-                <label for="roomName" class="form-label">
-                  <span class="label-icon">🎲</span>
-                  房间名称
-                </label>
-                <input
-                  id="roomName"
-                  v-model="formData.name"
-                  type="text"
-                  class="form-input"
-                  placeholder="请输入房间名称"
-                  required
+                <div class="flex flex-column gap-1">
+                  <FloatLabel variant="on">
+                    <Dropdown
+                      id="ttl"
+                      v-model="formData.ttl"
+                      :options="ttlOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      class="w-full"
+                      required
+                    />
+                    <label for="ttl">房间存活时间</label>
+                  </FloatLabel>
+                </div>
+
+                <div class="flex flex-column gap-1">
+                  <FloatLabel variant="on">
+                    <InputNumber
+                      id="round"
+                      v-model="formData.round"
+                      :min="1"
+                      :max="100"
+                      showButtons
+                      class="w-full"
+                      required
+                    />
+                    <label for="round">游戏轮数</label>
+                  </FloatLabel>
+                  <small class="text-600">建议设置为 10 轮</small>
+                </div>
+
+                <Button
+                  type="submit"
+                  class="w-full"
+                  :label="isLoading ? '创建中...' : '创建房间'"
+                  :icon="isLoading ? 'pi pi-spinner pi-spin' : 'pi pi-plus'"
+                  :loading="isLoading"
                 />
-              </div>
 
-              <div class="form-group">
-                <label for="ttl" class="form-label">
-                  <span class="label-icon">⏰</span>
-                  房间存活时间
-                </label>
-                <select id="ttl" v-model="formData.ttl" class="form-input" required>
-                  <option v-for="option in ttlOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="round" class="form-label">
-                  <span class="label-icon">🔢</span>
-                  游戏轮数
-                </label>
-                <input
-                  id="round"
-                  v-model.number="formData.round"
-                  type="number"
-                  class="form-input"
-                  placeholder="请输入游戏轮数"
-                  min="1"
-                  max="100"
-                  required
-                />
-                <small class="form-hint">建议设置为 10 轮</small>
-              </div>
-
-              <button type="submit" class="btn btn-primary btn-full-width" :disabled="isLoading">
-                <span v-if="isLoading" class="loading-spinner"></span>
-                <span class="btn-icon">🚀</span>
-                {{ isLoading ? '创建中...' : '创建房间' }}
-              </button>
-            </form>
-
-            <!-- 错误消息 -->
-            <div v-if="errorMessage" class="message error-message">
-              {{ errorMessage }}
-            </div>
-          </div>
+                <Message v-if="errorMessage" severity="error" class="w-full">
+                  {{ errorMessage }}
+                </Message>
+              </form>
+            </template>
+          </Card>
         </div>
       </div>
     </Transition>
@@ -236,71 +246,3 @@ const goHome = () => {
     </Transition>
   </div>
 </template>
-
-<style scoped>
-
-/* 房间信息容器布局 */
-.room-info-container {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: var(--spacing-xl);
-  margin-top: var(--spacing-2xl);
-}
-
-/* 左右列布局 */
-.left-column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xl);
-}
-
-.right-column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xl);
-}
-
-/* 排行榜占位符 */
-.leaderboard-placeholder {
-  text-align: center;
-  padding: var(--spacing-xl);
-  color: var(--text-secondary);
-}
-
-/* 轮数修改表单 */
-.round-update-form {
-  display: flex;
-  gap: var(--spacing-md);
-  align-items: center;
-}
-
-.round-update-form .form-input {
-  flex: 1;
-}
-
-/* 操作按钮布局 */
-.action-buttons {
-  grid-column: 1 / -1;
-  display: flex;
-  gap: var(--spacing-lg);
-  justify-content: center;
-  margin-top: var(--spacing-xl);
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .room-info-container {
-    grid-template-columns: 1fr;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .action-buttons .btn {
-    width: 100%;
-    max-width: 300px;
-  }
-}
-</style>
