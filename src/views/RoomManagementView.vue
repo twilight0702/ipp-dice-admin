@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { updateRoomRound, getRoomRank, openRoom, closeRoom, getRoomInfoVO } from '@/api/room'
+import { updateRoomRound, getRoomRank, openRoom, closeRoom, getRoomInfo } from '@/api/room'
 import { useToast } from 'primevue/usetoast'
 
 import Card from 'primevue/card'
@@ -24,6 +24,7 @@ const props = defineProps<{
   roomName: string
   ttl: number
   round: number
+  isOpen?: boolean
 }>()
 
 const router = useRouter()
@@ -37,7 +38,7 @@ const roomInfo = reactive({
   round: props.round,
   qrCodeUrl: '',
   qrCodeImage: '',
-  isOpen: 1, // Default to open
+  isOpen: props.isOpen === undefined ? 1 : (props.isOpen ? 1 : 0),
 })
 
 // Round modification
@@ -55,12 +56,14 @@ const lastRankHash = ref<string>('')
 const isFieldsetCollapsed = ref(false)
 
 // Room status
-const isRoomOpen = ref(true)
+const isRoomOpen = ref(props.isOpen === undefined ? true : props.isOpen)
 const isTogglingRoom = ref(false)
 
 // Polling
 const rankPollingTimer = ref<number | null>(null)
 const POLLING_INTERVAL = 5000 // 5 seconds
+const statusPollingTimer = ref<number | null>(null)
+const STATUS_POLLING_INTERVAL = 5000
 
 // QR Code generation
 const generateQRCode = (url: string): Promise<string> => {
@@ -76,10 +79,17 @@ const generateQRCode = (url: string): Promise<string> => {
 // Initialize
 onMounted(async () => {
   try {
-    const roomInfoResponse = await getRoomInfoVO(roomInfo.roomId)
-    if (roomInfoResponse.data) {
-      roomInfo.isOpen = roomInfoResponse.data.isOpen
-      isRoomOpen.value = roomInfoResponse.data.isOpen === 1
+    // 首次查询房间信息
+    const info = await getRoomInfo(roomInfo.roomId)
+    const data: any = info.data
+    if (data) {
+      roomInfo.name = data.name ?? roomInfo.name
+      roomInfo.ttl = data.ttl ?? roomInfo.ttl
+      roomInfo.round = data.round ?? roomInfo.round
+      if (data.isOpen !== undefined) {
+        roomInfo.isOpen = data.isOpen
+        isRoomOpen.value = data.isOpen === 1 || data.isOpen === true
+      }
     }
 
     if (import.meta.env.DEV) {
@@ -90,15 +100,19 @@ onMounted(async () => {
       roomInfo.qrCodeUrl = `${baseUrl}${basePath}/frontend/?roomId=${roomInfo.roomId}`
     }
     roomInfo.qrCodeImage = await generateQRCode(roomInfo.qrCodeUrl)
+
+    // 启动房间信息常驻轮询
+    startStatusPolling()
   } catch (error) {
-    console.error('Failed to generate QR code:', error)
-    toast.add({ severity: 'error', summary: '错误', detail: '生成二维码失败', life: 3000 })
+    console.error('Failed to initialize room:', error)
+    toast.add({ severity: 'error', summary: '错误', detail: '初始化房间失败', life: 3000 })
   }
 })
 
 // Cleanup on unmount
 onUnmounted(() => {
   stopRankPolling()
+  stopStatusPolling()
 })
 
 // Watch for leaderboard visibility change
@@ -160,6 +174,41 @@ const stopRankPolling = () => {
   }
 }
 
+// 常驻轮询房间基础信息（状态/轮数等）
+const fetchRoomInfo = async () => {
+  try {
+    const info = await getRoomInfo(roomInfo.roomId)
+    const data: any = info.data
+    if (data) {
+      roomInfo.name = data.name ?? roomInfo.name
+      roomInfo.ttl = data.ttl ?? roomInfo.ttl
+      roomInfo.round = data.round ?? roomInfo.round
+      if (data.isOpen !== undefined) {
+        const nextOpen = data.isOpen === 1 || data.isOpen === true
+        roomInfo.isOpen = data.isOpen
+        if (nextOpen !== isRoomOpen.value) {
+          isRoomOpen.value = nextOpen
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch room info:', error)
+  }
+}
+
+const startStatusPolling = () => {
+  stopStatusPolling()
+  fetchRoomInfo()
+  statusPollingTimer.value = window.setInterval(fetchRoomInfo, STATUS_POLLING_INTERVAL)
+}
+
+const stopStatusPolling = () => {
+  if (statusPollingTimer.value) {
+    window.clearInterval(statusPollingTimer.value)
+    statusPollingTimer.value = null
+  }
+}
+
 // Update round number
 const updateRound = async () => {
   if (newRound.value <= 0) {
@@ -213,6 +262,31 @@ const onSwitchChange = async (nextOpen: boolean) => {
     isTogglingRoom.value = false
   }
 }
+
+// 同步父组件传入的房间开关状态（如果有）
+watch(
+  () => props.isOpen,
+  (newVal) => {
+    if (newVal !== undefined) {
+      isRoomOpen.value = newVal
+      roomInfo.isOpen = newVal ? 1 : 0
+      if (!newVal) {
+        stopRankPolling()
+      } else if (isRankVisible.value) {
+        startRankPolling()
+      }
+    }
+  }
+)
+
+// 根据 isRoomOpen 的变化，自动控制排行榜轮询
+watch(isRoomOpen, (nextOpen) => {
+  if (!nextOpen) {
+    stopRankPolling()
+  } else if (isRankVisible.value) {
+    startRankPolling()
+  }
+})
 
 // Navigation
 const goHome = () => {

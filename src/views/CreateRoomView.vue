@@ -159,6 +159,15 @@ const goHome = () => {
 
 <template>
   <div class="page-container">
+    <!-- 左上角返回首页按钮 -->
+        <Button
+          label="返回首页"
+          icon="pi pi-arrow-left"
+          severity="secondary"
+          outlined
+          @click="goHome"
+        />
+
     <!-- 创建房间表单 -->
     <Transition name="fade-out" appear>
       <div v-if="showCreateForm" class="grid justify-content-center p-3">
@@ -246,3 +255,12 @@ const goHome = () => {
     </Transition>
   </div>
 </template>
+
+<style scoped>
+.back-home-btn {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1000;
+}
+</style>
